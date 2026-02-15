@@ -1,0 +1,12 @@
+{
+  "Normal": {
+    "n": 4044,
+    "t_df": 10.0,
+    "used_multivariate_t": true
+  },
+  "Estr\u00e9s": {
+    "n": 698,
+    "t_df": 10.0,
+    "used_multivariate_t": true
+  }
+}
