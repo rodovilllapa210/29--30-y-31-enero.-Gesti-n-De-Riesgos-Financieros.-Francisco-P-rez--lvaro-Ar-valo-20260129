@@ -6,7 +6,7 @@ Notebook técnico para modelar cambios de régimen, dependencia y riesgo de cola
 
 Desarrollar un sistema completo de gestión de riesgos que conteste:
 - ¿Cómo cambia el riesgo de la cartera al entrar en crisis?
-- ¿Qué activos dejan de diversificar bajo estrés?
+- ¿Qué activos dejan de diversificar bajo estres?
 - ¿Qué deterioro mínimo hace "inaceptable" el perfil actual? (reverse stress)
 
 ## 📊 Universo de Activos
@@ -40,7 +40,7 @@ Desarrollar un sistema completo de gestión de riesgos que conteste:
 ## 🔧 Metodología
 
 ### Fase 1: Identificación de Regímenes (HMM)
-- **Modelo:** Hidden Markov Model con 2 estados (Normal vs Crisis/Estrés)
+- **Modelo:** Hidden Markov Model con 2 estados (Normal vs Crisis/Estres)
 - **Features:** Retornos, volatilidad realizada, drawdown, proxy de crédito
 - **Salida:** Probabilidad diaria de crisis y segmentación en episodios
 
@@ -50,7 +50,7 @@ Desarrollar un sistema completo de gestión de riesgos que conteste:
 - **Focus:** Deterioro de colas en activos de riesgo vs defensivos
 
 ### Fase 3: Dependencia (Correlación vs Cópulas)
-- **3a:** Correlaciones por estado (Normal vs Estrés)
+- **3a:** Correlaciones por estado (Normal vs Estres)
 - **3b:** Dependencia de cola empírica (λ_L)
 - **3c:** Cópulas t-Student para modelar dependencia extrema
 
@@ -116,7 +116,7 @@ jupyter notebook Taller_Riesgos_HMM_Copulasv2_main.ipynb
 ## 📈 Resultados Clave
 
 ### Riesgo por Régimen
-- **HYG:** Volatilidad en Estrés sube 170% vs Normal
+- **HYG:** Volatilidad en Estres sube 170% vs Normal
 - **GLD:** Clasificado como "No refugio robusto" (1/4 criterios)
 - **Dependencia:** Correlación media 0.224→0.306, cola λ_L 0.042→0.105
 

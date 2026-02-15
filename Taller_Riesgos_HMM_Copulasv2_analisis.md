@@ -20,7 +20,7 @@ Eres Riesgos de Mercado en una gestora multi-activo y presentas al Comité de Ri
 Desarrollar en Python un sistema capaz de contestar:
 
 - ¿Cómo cambia el riesgo de la cartera al entrar en crisis?
-- ¿Qué activos dejan de diversificar bajo estrés?
+- ¿Qué activos dejan de diversificar bajo estres?
 - ¿Qué deterioro mínimo hace “inaceptable” el perfil actual? (reverse stress)
 
 ### Universo (ETFs)
@@ -118,7 +118,7 @@ Comparación clave (muy útil en este taller):
 - **Skew (asimetría)**: si los extremos negativos y positivos son igual de probables.
   - Skew negativo (típico en risk‑on): más “sustos” hacia abajo que hacia arriba.
   - Traducción comité: “hay más probabilidad de caídas grandes que de subidas grandes”.
-  - **Ejemplo**: AAPL en Estrés con skew −0.8 ⇒ la distribución tiene una “cola izquierda” más larga; los peores días son más extremos (en %) que los mejores.
+  - **Ejemplo**: AAPL en Estres con skew −0.8 ⇒ la distribución tiene una “cola izquierda” más larga; los peores días son más extremos (en %) que los mejores.
 
 - **Kurtosis (curtosis)**: cuánta masa hay en colas (extremos) vs una normal.
   - Kurtosis alta ⇒ más días muy extremos (buenos o malos) de lo que predeciría una campana.
@@ -130,15 +130,15 @@ Comparación clave (muy útil en este taller):
 
 ### Regímenes, filtrado y suavizado
 
-- **Régimen / estado**: “modo” del mercado (Normal vs Estrés). Se modela como variable oculta $S_t$.
+- **Régimen / estado**: “modo” del mercado (Normal vs Estres). Se modela como variable oculta $S_t$.
   - Intuición: el mercado cambia de comportamiento (volatilidad, colas, dependencia) y esos cambios duran semanas/meses.
 
 - **Probabilidad filtrada** $P(S_t=\text{crisis}\mid X_{1:t})$:
   - Es una probabilidad “usable en tiempo real”: solo usa información hasta el día $t$.
-  - Se interpreta como un semáforo: 0.1 = “casi seguro normal”, 0.9 = “casi seguro estrés”.
+  - Se interpreta como un semáforo: 0.1 = “casi seguro normal”, 0.9 = “casi seguro estres”.
 
 - **Viterbi**:
-  - Devuelve una **etiqueta por día** (Normal/Estrés) que maximiza la probabilidad total de la secuencia.
+  - Devuelve una **etiqueta por día** (Normal/Estres) que maximiza la probabilidad total de la secuencia.
   - Útil para “dibujar bloques” (episodios) sin estar hablando de probabilidades cada día.
 
 - **EWMA** (suavizado exponencial):
@@ -179,7 +179,7 @@ Comparación clave (muy útil en este taller):
 - **Pseudo‑observaciones**: convertir cada retorno en su **percentil** dentro del régimen: $U\in(0,1)$.
   - Qué estás haciendo realmente: cambias “unidades” (%, volatilidad distinta por activo) por “posición en su ranking”.
   - Mini‑ejemplo:
-    - Si para AAPL un retorno −3% es un percentil 1% en Estrés, entonces lo representas como $U_{AAPL}=0.01$.
+    - Si para AAPL un retorno −3% es un percentil 1% en Estres, entonces lo representas como $U_{AAPL}=0.01$.
     - Si para IEF un retorno −1% es un percentil 1% (porque IEF se mueve menos), lo representas también como $U_{IEF}=0.01$.
     - Ahora puedes hablar de dependencia entre “días muy malos” sin mezclar escalas.
   - Ventaja: la cópula modela “cómo de sincronizados están esos percentiles” de forma consistente entre activos.
@@ -251,12 +251,12 @@ Nota de numeración: en el notebook la sección puede aparecer como “8) Fase 6
 En esta fase se identifican **regímenes latentes** del mercado de forma **dinámica** (usable en tiempo real). El deliverable mínimo para el Comité es:
 
 - una serie diaria de probabilidad $P(\text{crisis})$,
-- una segmentación en **bloques** (normal vs crisis/estrés) para un gráfico legible,
-- evidencia de que el régimen “crisis/estrés” tiene interpretación económica y captura episodios conocidos.
+- una segmentación en **bloques** (normal vs crisis/estres) para un gráfico legible,
+- evidencia de que el régimen “crisis/estres” tiene interpretación económica y captura episodios conocidos.
 
 En nuestro baseline trabajamos con **2 estados**:
 - **normal**
-- **crisis/estrés**
+- **crisis/estres**
 
 ### Decisiones tomadas (baseline) y posibles mejoras
 
@@ -265,7 +265,7 @@ Esta subsección deja claro **qué decisiones hemos tomado** en el baseline (lo 
 **Decisiones tomadas (baseline del notebook)**
 
 1) **Número de estados $K$**
-- Elegimos **$K=2$** (normal vs crisis/estrés) para maximizar interpretabilidad y estabilidad.
+- Elegimos **$K=2$** (normal vs crisis/estres) para maximizar interpretabilidad y estabilidad.
 
 2) **Qué observa el modelo (señales/features)**
 - Trabajamos con un conjunto **core** y defendible: retornos (`r_equity`, `r_hy`, `r_10y`, `r_2y`, `r_gld`), proxy de crédito (`r_credit = r_hy - r_10y`), volatilidad realizada 21d (`vol_equity_21`, `vol_hy_21`) y drawdown rolling 252d (`dd_equity`).
@@ -294,30 +294,30 @@ Llamamos $S_t$ al régimen en el día $t$ (no se observa directamente). El supue
 
 $$P(S_t=j \mid S_{t-1}=i) = A_{ij}$$
 
-Ejemplo (2 estados: 0=Normal, 1=Estrés). Una matriz de transición típica y fácil de interpretar sería:
+Ejemplo (2 estados: 0=Normal, 1=Estres). Una matriz de transición típica y fácil de interpretar sería:
 
-| De \ A | Normal (0) | Estrés (1) |
+| De \ A | Normal (0) | Estres (1) |
 |---|---:|---:|
 | **Normal (0)** | 0.98 | 0.02 |
-| **Estrés (1)** | 0.03 | 0.97 |
+| **Estres (1)** | 0.03 | 0.97 |
 
 Lectura “modo Comité” (qué significa cada celda):
 - **0.98 (Normal→Normal)**: si ayer era normal, lo habitual es seguir normal.
-- **0.02 (Normal→Estrés)**: pasar de normal a estrés es relativamente raro (cuando ocurre, suele ser porque cambian varias señales a la vez, no por un día aislado).
-- **0.97 (Estrés→Estrés)**: si entras en estrés, tiende a durar (inercia).
-- **0.03 (Estrés→Normal)**: volver a normal ocurre, pero no suele ser inmediato.
+- **0.02 (Normal→Estres)**: pasar de normal a estres es relativamente raro (cuando ocurre, suele ser porque cambian varias señales a la vez, no por un día aislado).
+- **0.97 (Estres→Estres)**: si entras en estres, tiende a durar (inercia).
+- **0.03 (Estres→Normal)**: volver a normal ocurre, pero no suele ser inmediato.
 
 Intuición (sin fórmulas):
-- $S_t$ es una etiqueta que el modelo “imagina” para cada día (p.ej. **normal** o **estrés**). No la observas directamente (no existe una columna “hoy es crisis”), por eso es un **estado oculto**.
+- $S_t$ es una etiqueta que el modelo “imagina” para cada día (p.ej. **normal** o **estres**). No la observas directamente (no existe una columna “hoy es crisis”), por eso es un **estado oculto**.
 - La suposición markoviana dice: para estimar el estado de hoy, lo más importante es el estado de ayer. No significa que el pasado no importe; significa que se resume en “ayer”.
 
 Qué es $A$ (la matriz de transición):
 - $A_{ij} = P(S_t=j \mid S_{t-1}=i)$ se lee: “si ayer estaba en $i$, ¿qué probabilidad hay de que hoy esté en $j$?”
-- Con 2 estados (0=Normal, 1=Estrés):
+- Con 2 estados (0=Normal, 1=Estres):
   - $A_{00}$: Normal→Normal (seguir normal)
-  - $A_{01}$: Normal→Estrés (entrar en estrés)
-  - $A_{10}$: Estrés→Normal (salir de estrés)
-  - $A_{11}$: Estrés→Estrés (seguir en estrés)
+  - $A_{01}$: Normal→Estres (entrar en estres)
+  - $A_{10}$: Estres→Normal (salir de estres)
+  - $A_{11}$: Estres→Estres (seguir en estres)
 
 Por qué “diagonal alta” = inercia:
 - La diagonal de $A$ son $A_{00}$ y $A_{11}$ (quedarte en el mismo estado). Si son altas (p.ej. 0.97–0.99), el modelo está diciendo que los regímenes **duran**.
@@ -329,13 +329,13 @@ Interpretación para Comité:
 
 Qué significa “cambio estructural” (en este contexto):
 - No es “hoy la equity cayó y ya está”. Es que durante un tramo de tiempo, varias señales cambian de forma coherente respecto al patrón normal (p.ej. sube `vol_equity_21`, empeora `r_credit`, el `dd_equity` se hace más profundo, etc.).
-- El HMM captura esto porque compara qué “perfil” (normal vs estrés) explica mejor el vector completo $X_t$ y, además, la matriz $A$ favorece la persistencia: para cambiar de estado suele requerirse que ese patrón se sostenga más de un día.
+- El HMM captura esto porque compara qué “perfil” (normal vs estres) explica mejor el vector completo $X_t$ y, además, la matriz $A$ favorece la persistencia: para cambiar de estado suele requerirse que ese patrón se sostenga más de un día.
 
 **2) Qué “ve” el modelo (señales) y qué asume dentro de cada estado**
 
 Cada día resumimos el mercado con un vector $X_t$ (retornos, volatilidades, drawdown, crédito). La idea del HMM es:
 
-- **El estado $S_t$** dice “en qué modo está el mercado” (normal vs estrés).
+- **El estado $S_t$** dice “en qué modo está el mercado” (normal vs estres).
 - **Las señales $X_t$** tienden a tomar valores distintos según ese modo.
 
 En términos estadísticos, el modelo asume que, *condicionado al estado*, las señales se distribuyen de forma estable (con un “perfil” propio de cada régimen):
@@ -344,19 +344,19 @@ $$X_t \mid S_t=k \sim \mathcal{N}(\mu_k, \Sigma_k)$$
 
 Interpretación:
 
-- $\mu_k$ resume los **niveles típicos** del régimen (p.ej., en estrés suele haber `vol_equity_21` más alta, `dd_equity` más negativo y `r_credit` más débil).
+- $\mu_k$ resume los **niveles típicos** del régimen (p.ej., en estres suele haber `vol_equity_21` más alta, `dd_equity` más negativo y `r_credit` más débil).
 - $\Sigma_k$ resume la **variabilidad** de las señales dentro del régimen (qué tanto “se mueve” cada señal alrededor de su nivel típico; con covarianza `diag` lo tratamos de forma robusta, sin forzar co-movimientos complejos).
 
 En lenguaje llano: “si hoy fuera un día de crisis, esperaríamos ver un patrón de señales parecido a otros días de crisis; si fuera normal, parecido a otros días normales”. El HMM usa esa diferencia de patrones para inferir $P(S_t=\text{crisis})$.
 
 **3) Cómo se identifica “crisis” sin imponer reglas a mano**
 
-El modelo no etiqueta “crisis” por un umbral fijo de una feature. Primero estima dos (o $K$) perfiles. Después, *tú etiquetas* cuál es el estado “crisis/estrés” mirando su interpretación económica (por ejemplo: peor media de la cesta equity, mayor volatilidad, drawdown más profundo, crédito más deteriorado). Eso es defendible porque es una regla de lectura, no una regla de detección.
+El modelo no etiqueta “crisis” por un umbral fijo de una feature. Primero estima dos (o $K$) perfiles. Después, *tú etiquetas* cuál es el estado “crisis/estres” mirando su interpretación económica (por ejemplo: peor media de la cesta equity, mayor volatilidad, drawdown más profundo, crédito más deteriorado). Eso es defendible porque es una regla de lectura, no una regla de detección.
 
 **4) Qué produce el notebook (outputs que importan)**
 
 - **Señal continua**: una probabilidad diaria $P(S_t=\text{crisis}\mid X_{1:t})$ para monitorización.
-- **Segmentación en episodios**: una etiqueta/secuencia de regímenes para sombrear bloques y poder hablar de “episodios de estrés” con fechas.
+- **Segmentación en episodios**: una etiqueta/secuencia de regímenes para sombrear bloques y poder hablar de “episodios de estres” con fechas.
 
 El punto clave: el HMM separa *incertidumbre diaria* (probabilidad) de *narrativa de episodios* (bloques), que es exactamente lo que un Comité necesita para discutir riesgos.
 
@@ -366,16 +366,16 @@ Nota: en el notebook las variables `r_*` son **retornos logarítmicos diarios**.
 
 **Señales (núcleo del notebook)**
 
-| Feature | Qué es | Qué aporta para detectar estrés |
+| Feature | Qué es | Qué aporta para detectar estres |
 |---|---|---|
 | `r_equity` | Retorno diario (log) de la cesta equity | Señal principal de risk-on/risk-off; en crisis suele ser negativa y más extrema |
-| `r_hy` | Retorno diario (log) de HYG | Captura estrés en crédito/high yield (se deteriora en crisis de spreads) |
+| `r_hy` | Retorno diario (log) de HYG | Captura estres en crédito/high yield (se deteriora en crisis de spreads) |
 | `r_10y` | Retorno diario (log) de IEF | Captura shocks en duración media (a veces hedge, a veces falla) |
-| `r_2y` | Retorno diario (log) de SHY | Señal de tramo corto y estrés de tipos | 
+| `r_2y` | Retorno diario (log) de SHY | Señal de tramo corto y estres de tipos | 
 | `r_gld` | Retorno diario (log) de GLD | Refugio/hedge potencial; ayuda a diferenciar tipos de crisis |
 | `r_credit = r_hy - r_10y` | Diferencial de retornos HYG vs IEF | Proxy de widening/narrowing de spreads de crédito (aversión al riesgo) |
-| `vol_equity_21` | Volatilidad realizada 21 días de `r_equity` (std rolling) | Clustering de volatilidad y persistencia del estrés |
-| `vol_hy_21` | Volatilidad realizada 21 días de `r_hy` | Estrés específico en crédito |
+| `vol_equity_21` | Volatilidad realizada 21 días de `r_equity` (std rolling) | Clustering de volatilidad y persistencia del estres |
+| `vol_hy_21` | Volatilidad realizada 21 días de `r_hy` | Estres específico en crédito |
 | `dd_equity` | $\log(P_{eq}) - \max_{252d}\log(P_{eq})$ (≤0) | Daño persistente vs “mal día” |
 
 En conjunto, estas features aportan dirección (retornos), intensidad (volatilidad), persistencia (drawdown) y mecanismo (crédito).
@@ -395,9 +395,9 @@ En nuestro notebook, los “bloques” se obtienen aplicando reglas sobre $P(\te
 **Ejemplo simple:** si en un bloque (p.ej. 2008) los mayores z-scores son `vol_equity_21` alto y `r_credit` muy negativo, el mensaje es ?volatilidad se dispara? y ?credito se deteriora? en ese episodio.
 
 
-Los “drivers” (o “atributos”) son una forma de explicar, para cada bloque de estrés/crisis, qué señales fueron las más “anómalas” comparadas con un día normal.
+Los “drivers” (o “atributos”) son una forma de explicar, para cada bloque de estres/crisis, qué señales fueron las más “anómalas” comparadas con un día normal.
 
-- Primero el HMM te da una probabilidad diaria $P(\text{crisis})$ y tú conviertes eso en bloques (episodios continuos de estrés).
+- Primero el HMM te da una probabilidad diaria $P(\text{crisis})$ y tú conviertes eso en bloques (episodios continuos de estres).
 - Para cada bloque, calculamos la media de cada feature dentro del bloque y la comparamos con la media de esas mismas features en días normales.
 - Esa comparación se resume con un z-score:
 
@@ -413,7 +413,7 @@ Importante: no prueba causalidad (“esto causó la crisis”). Sirve para justi
 
 Piensa la Fase 1 como un clasificador probabilístico con memoria:
 
-1) Cada día construimos $X_t$ (features). Ejemplo de día con estrés:
+1) Cada día construimos $X_t$ (features). Ejemplo de día con estres:
 - `r_equity` muy negativo,
 - `vol_equity_21` alta,
 - `dd_equity` muy negativo,
@@ -421,18 +421,18 @@ Piensa la Fase 1 como un clasificador probabilístico con memoria:
 
 2) El HMM compara qué perfil (normal vs crisis) explica mejor ese $X_t$ y devuelve $P(\text{crisis})$.
 
-3) Si la probabilidad se mantiene alta, el post-procesado genera un bloque de crisis/estrés (sombreado), evitando “código de barras”.
+3) Si la probabilidad se mantiene alta, el post-procesado genera un bloque de crisis/estres (sombreado), evitando “código de barras”.
 
 4) Para explicar el bloque, se calculan drivers (top z-scores) y se reportan en una tabla.
 
 **Ejemplo numérico (un día y un bloque):**
-- **Un día típico de estrés** (valores ilustrativos): `r_equity` = −1.8%, `vol_equity_21` = 2.2%, `dd_equity` = −12%, `r_credit` = −0.5%. El HMM compara este vector con los perfiles Normal/Estrés y puede devolver $P(\text{crisis})=0.92$ → ese día se sombrea como crisis.
+- **Un día típico de estres** (valores ilustrativos): `r_equity` = −1.8%, `vol_equity_21` = 2.2%, `dd_equity` = −12%, `r_credit` = −0.5%. El HMM compara este vector con los perfiles Normal/Estres y puede devolver $P(\text{crisis})=0.92$ → ese día se sombrea como crisis.
 - **Drivers de un bloque** (ejemplo de tabla): si en un episodio 2008–2009 los z-scores son `dd_equity: z=−5.9`, `vol_hy_21: z=+2.7`, `vol_equity_21: z=+1.7`, `r_equity: z=−0.1`, la lectura es: "el modelo marcó este episodio sobre todo por drawdown muy profundo y volatilidad alta (equity y crédito); el retorno medio de la cesta equity dentro del bloque no es el que más destaca en valor absoluto".
 
 ### Validación (lo que hay que demostrar al Comité)
 
-- Interpretación económica: crisis/estrés debe mostrar mayor volatilidad, peores retornos y/o señales de crédito deterioradas.
-- Episodios conocidos: deben aparecer periodos de estrés relevantes (p.ej. 2008/2020) sin forzar fechas.
+- Interpretación económica: crisis/estres debe mostrar mayor volatilidad, peores retornos y/o señales de crédito deterioradas.
+- Episodios conocidos: deben aparecer periodos de estres relevantes (p.ej. 2008/2020) sin forzar fechas.
 - Estabilidad: el régimen no debe alternar cada pocos días (evitar “flicker”).
 
 ### Receta de parámetros (baseline replicable)
@@ -462,7 +462,7 @@ Si quieres un régimen más “macro” (menos señales), mantén o sube `min_tr
 ### Qué te piden
 Comparar la distribución de retornos de cada ETF entre regímenes: media, volatilidad, asimetría, colas.
 
-En nuestro baseline, esto se hace **condicionando por el estado** detectado en Fase 1 (Normal vs Estrés) y reportando medidas de centro y cola por activo.
+En nuestro baseline, esto se hace **condicionando por el estado** detectado en Fase 1 (Normal vs Estres) y reportando medidas de centro y cola por activo.
 
 ### Cómo explicarlo
 Piensa en dos capas:
@@ -484,22 +484,22 @@ Piensa en dos capas:
 
 **Implementación en el notebook (baseline):**
 - Tabla por activo y estado con `mean`, `vol`, `skew`, `kurt`, `VaR_5`, `ES_5`, `VaR_1`, `ES_1`.
-- Gráfico rápido de comparación: barras de **ES(5%)** por activo en Normal vs Estrés.
+- Gráfico rápido de comparación: barras de **ES(5%)** por activo en Normal vs Estres.
 - Export: se guarda la tabla completa en `outputs_taller/phase2_risk_by_state.csv`.
 
 ### Lectura de resultados (lo que le importa al Comité)
 El Comité está preocupado por **comportamiento extremo en crisis**, así que aquí la métrica “estrella” es el **ES** (Expected Shortfall): no solo mira un cuantil (VaR), sino el **promedio de las peores pérdidas**.
 
-En nuestros datos (ES al 5%, diario), el deterioro en Estrés vs Normal es más acusado en:
+En nuestros datos (ES al 5%, diario), el deterioro en Estres vs Normal es más acusado en:
 - **GME**, **ENPH** y **NVDA**: suelen concentrar los mayores deterioros de cola y volatilidad.
 - **AMZN** y **BAC** también empeoran claramente en cola izquierda.
 - **HYG** (high yield) empeora de forma relevante (cola y volatilidad se amplían).
 
 Activos más defensivos en esta muestra:
 - **IEF** y **SHY**: el empeoramiento en ES(5%) es pequeño comparado con renta variable/crédito.
-- **GLD**: empeora en estrés, pero menos que los activos de riesgo.
+- **GLD**: empeora en estres, pero menos que los activos de riesgo.
 
-Sobre “media vs riesgo”: la **media** en Estrés no necesariamente cae (puede incluir rebotes dentro del mismo bloque), pero **las colas sí se deterioran**; por eso VaR/ES son el foco cuando el objetivo es “¿qué pasa en lo peor de lo peor?”.
+Sobre “media vs riesgo”: la **media** en Estres no necesariamente cae (puede incluir rebotes dentro del mismo bloque), pero **las colas sí se deterioran**; por eso VaR/ES son el foco cuando el objetivo es “¿qué pasa en lo peor de lo peor?”.
 
 ### Gráficos que “venden” bien
 - Histogramas/densidades por estado (dos colores).
@@ -512,13 +512,13 @@ Sobre “media vs riesgo”: la **media** en Estrés no necesariamente cae (pued
 | Activo | Estado  | mean (%) | vol (%) | ES_5 (%) |
 |--------|--------|----------|---------|----------|
 | AAPL   | Normal | 0.04     | 1.0     | −1.5     |
-| AAPL   | Estrés | −0.05    | 2.2     | −3.2     |
+| AAPL   | Estres | −0.05    | 2.2     | −3.2     |
 | NVDA   | Normal | 0.02     | 1.3     | −1.8     |
-| NVDA   | Estrés | −0.12    | 2.8     | −4.5     |
+| NVDA   | Estres | −0.12    | 2.8     | −4.5     |
 | IEF    | Normal | 0.02     | 0.5     | −0.4     |
-| IEF    | Estrés | 0.01     | 0.7     | −0.6     |
+| IEF    | Estres | 0.01     | 0.7     | −0.6     |
 
-Lectura: "En Estrés, la cola de AAPL empeora (ES_5 pasa de −1.5% a −3.2%); NVDA empeora mucho más (ΔES_5 ≈ −2.7%); IEF casi no cambia → es el tipo de activo que mantiene diversificación en crisis."
+Lectura: "En Estres, la cola de AAPL empeora (ES_5 pasa de −1.5% a −3.2%); NVDA empeora mucho más (ΔES_5 ≈ −2.7%); IEF casi no cambia → es el tipo de activo que mantiene diversificación en crisis."
 
 ---
 
@@ -539,7 +539,7 @@ En el notebook se analiza en tres niveles (alineados con el enunciado):
 - **(3b) cola empírica** (caídas conjuntas en días malos).
 - **(3c) cópulas** (modelo de dependencia para simular escenarios en Fase 4).
 
-### 3a) Correlaciones por estado (Normal vs Estrés)
+### 3a) Correlaciones por estado (Normal vs Estres)
 
 #### Qué es “correlación”
 La correlación (Pearson) mide si dos series se mueven juntas de forma “lineal”.
@@ -552,21 +552,21 @@ La correlación (Pearson) mide si dos series se mueven juntas de forma “lineal
 Calculas la matriz de correlaciones usando solo días:
 
 - **Normal** (panel 1)
-- **Estrés** (panel 2)
+- **Estres** (panel 2)
 
 Y luego construyes el panel 3:
 
-$$\Delta Corr = Corr(\text{Estrés}) - Corr(\text{Normal})$$
+$$\Delta Corr = Corr(\text{Estres}) - Corr(\text{Normal})$$
 
 #### Cómo leer los 3 paneles (ejemplos)
 Imagina el par **AAPL–MSFT**:
 
-- Si en Normal tienes corr 0.85 y en Estrés 0.92 → $\Delta = +0.07$.
+- Si en Normal tienes corr 0.85 y en Estres 0.92 → $\Delta = +0.07$.
 - Traducción: *“en crisis se mueven aún más juntos → diversificación peor dentro de renta variable”*.
 
 Para un par “diversificador” tipo **AAPL–IEF**:
 
-- Si en Normal corr = −0.20 y en Estrés corr = −0.30 → $\Delta = −0.10$.
+- Si en Normal corr = −0.20 y en Estres corr = −0.30 → $\Delta = −0.10$.
 - Traducción: *“en crisis el bono protege más (más anticorrelación)”*.
 
 #### Por qué a veces parece “igual”
@@ -614,18 +614,18 @@ Entonces:
 Interpretación:
 
 - 0.4 significa: *“cuando miro la cola del 5%, una parte importante de veces caen juntos”*.
-- Si en Estrés $\lambda$ sube (por ejemplo 0.4 → 0.6), el mensaje es: en crisis aumentan las caídas conjuntas en cola.
+- Si en Estres $\lambda$ sube (por ejemplo 0.4 → 0.6), el mensaje es: en crisis aumentan las caídas conjuntas en cola.
 
 #### Qué significan los heatmaps de 3b
 
 - Heatmap “$\lambda_L$ Normal”: intensidad = qué tan conjunta es la cola en Normal.
-- Heatmap “$\lambda_L$ Estrés”: lo mismo en crisis.
+- Heatmap “$\lambda_L$ Estres”: lo mismo en crisis.
 - Heatmap “$\Delta\lambda_L$”: rojo = aumenta la cola conjunta en crisis, azul = disminuye.
 
 Esto suele ser más “Comité” que la correlación porque habla directamente de **eventos extremos**.
 
 **Implementación (notebook):**
-- Heatmaps de $\lambda_L$ empírico en Normal vs Estrés (para $q=5\%$ y $q=1\%$) y sus deltas.
+- Heatmaps de $\lambda_L$ empírico en Normal vs Estres (para $q=5\%$ y $q=1\%$) y sus deltas.
 - Export de matrices a:
   - `outputs_taller/phase3_taildep_empirical_normal_q5.csv`
   - `outputs_taller/phase3_taildep_empirical_estres_q5.csv`
@@ -664,7 +664,7 @@ La cópula gaussiana resume la dependencia con una matriz de correlación en el 
 
 Por eso el panel gaussiano se suele parecer mucho al de correlación y los deltas suelen ser “suaves”.
 
-#### ¿Es coherente que Normal y Estrés se vean “casi iguales”?
+#### ¿Es coherente que Normal y Estres se vean “casi iguales”?
 Sí, y de hecho es un resultado típico cuando:
 
 - El cambio de dependencia “media/lineal” entre regímenes es **moderado** (en tu ejecución, el propio panel de diferencias reporta un máximo $|\Delta|$ relativamente pequeño).
@@ -672,10 +672,10 @@ Sí, y de hecho es un resultado típico cuando:
 
 Interpretación práctica:
 
-- Los heatmaps de **nivel** (Normal vs Estrés) te dicen “cómo es la dependencia en general”.
+- Los heatmaps de **nivel** (Normal vs Estres) te dicen “cómo es la dependencia en general”.
 - El panel **$\Delta$** es el que contesta “qué cambia al entrar en crisis”.
 
-Además, en t-cópula el mapa de cola asintótica depende sobre todo de (i) la matriz de correlación estimada y (ii) los grados de libertad $\nu$; si $\nu$ sale parecido en Normal y Estrés (en tu caso, del orden de 7 en ambos), es coherente que los mapas de nivel también se parezcan y el mensaje esté concentrado en el $\Delta$.
+Además, en t-cópula el mapa de cola asintótica depende sobre todo de (i) la matriz de correlación estimada y (ii) los grados de libertad $\nu$; si $\nu$ sale parecido en Normal y Estres (en tu caso, del orden de 7 en ambos), es coherente que los mapas de nivel también se parezcan y el mensaje esté concentrado en el $\Delta$.
 
 #### t-cópula: por qué importa
 La t-cópula añade “colas más gordas” y permite dependencia más fuerte en extremos.
@@ -693,7 +693,7 @@ Ese heatmap no es el “q=1% histórico” de 3b; es la dependencia de cola **as
 Interpretación:
 
 - valores más altos = el modelo cree que hay más probabilidad de caídas conjuntas extremas.
-- $\Delta$ positivo en Estrés = *“en crisis la cola conjunta aumenta”*.
+- $\Delta$ positivo en Estres = *“en crisis la cola conjunta aumenta”*.
 
 **Implementación (notebook):**
 - Convertimos retornos a pseudo-observaciones $U\in(0,1)$ y ajustamos por estado:
@@ -709,9 +709,9 @@ Interpretación:
   - resumen: `outputs_taller/phase3_copula_summary.json`
 
 ### Cómo lo contaría en el informe (texto simple)
-“En Fase 3 analizamos la dependencia entre activos por régimen. La correlación cambia moderadamente entre Normal y Estrés, pero al mirar eventos extremos (cola izquierda) observamos que varios pares de activos de riesgo incrementan su probabilidad de caer simultáneamente en crisis. Para modelar esta dependencia de forma utilizable en simulación, ajustamos cópulas por estado (Gaussiana y t), donde la t-cópula permite capturar dependencia en cola, coherente con la preocupación del Comité por pérdidas conjuntas en crisis.”
+“En Fase 3 analizamos la dependencia entre activos por régimen. La correlación cambia moderadamente entre Normal y Estres, pero al mirar eventos extremos (cola izquierda) observamos que varios pares de activos de riesgo incrementan su probabilidad de caer simultáneamente en crisis. Para modelar esta dependencia de forma utilizable en simulación, ajustamos cópulas por estado (Gaussiana y t), donde la t-cópula permite capturar dependencia en cola, coherente con la preocupación del Comité por pérdidas conjuntas en crisis.”
 
-Lectura rápida típica (la que “vende”): en Estrés sube la dependencia (y especialmente la cola izquierda) entre activos de riesgo: (AAPL, MSFT), (NVDA, AMZN), (AAPL, HYG), etc.; mientras que los defensivos (IEF/SHY/GLD) tienden a mantener o mejorar diversificación según el par.
+Lectura rápida típica (la que “vende”): en Estres sube la dependencia (y especialmente la cola izquierda) entre activos de riesgo: (AAPL, MSFT), (NVDA, AMZN), (AAPL, HYG), etc.; mientras que los defensivos (IEF/SHY/GLD) tienden a mantener o mejorar diversificación según el par.
 
 ### Cómo demostrar “fallo de diversificación”
 - Compara correlación media en crisis vs normal.
@@ -721,14 +721,14 @@ Lectura rápida típica (la que “vende”): en Estrés sube la dependencia (y 
 Checklist fase 3:
 - [x] Correlaciones por estado.
 - [x] Medida/visual de dependencia en cola (empírica $\lambda_L$ y t-cópula).
-- [x] Conclusión accionable: qué deja de diversificar (riesgo se mueve más “en bloque” en Estrés).
+- [x] Conclusión accionable: qué deja de diversificar (riesgo se mueve más “en bloque” en Estres).
 
 ---
 
 ## 5) Fase 4 — Generación de escenarios sintéticos
 
 ### Qué estás haciendo realmente (en una frase)
-Construyes un **generador de retornos diarios conjuntos** condicionado al régimen (Normal vs Estrés):
+Construyes un **generador de retornos diarios conjuntos** condicionado al régimen (Normal vs Estres):
 
 1) la **dependencia** (cómo caen juntos) la pones con una **t‑cópula por estado** (Fase 3c),
 2) las **marginales** (colas/asimetría de cada activo) las pones con la **distribución empírica por estado** (Fase 2),
@@ -742,12 +742,12 @@ Piensa que estás construyendo un “generador de días” para cada régimen. E
 **Pieza A — “Distribución empírica” = usar el histórico como catálogo de días**
 Aquí no hay magia: para cada activo y régimen coges sus retornos históricos y los usas como referencia.
 
-- Hazte la imagen mental: tienes una lista de retornos de AAPL **solo en Estrés**.
+- Hazte la imagen mental: tienes una lista de retornos de AAPL **solo en Estres**.
 - Ordenas esa lista de peor a mejor.
 - Si el simulador pide el percentil **0.02**, está pidiendo “un día tan malo como el **2% peor** de esa lista”.
 
 Mini‑ejemplo:
-- Si tienes 1000 días de AAPL en Estrés, el 2% peor son ~20 días.
+- Si tienes 1000 días de AAPL en Estres, el 2% peor son ~20 días.
 - El percentil 0.02 sería “uno de esos ~20 peores días”.
 - Si esos días rondan −4%, cuando pida 0.02, AAPL te saldrá alrededor de −4%.
 
@@ -771,7 +771,7 @@ $\nu$ controla cuán frecuentes/intensos son esos extremos conjuntos:
 
 **Frase para memorizar:**
 - Empírica = “cada activo cae/sube como en su histórico del régimen”.
-- t‑cópula = “en Estrés es más probable que varios estén en mal percentil a la vez”.
+- t‑cópula = “en Estres es más probable que varios estén en mal percentil a la vez”.
 - $\nu$ = “cuánto permito esos malos días simultáneos (más pequeño = más)”.
 
 Con esas dos piezas, los escenarios ya sirven para lo importante: simular P&L y calcular VaR/ES de cartera por régimen.
@@ -785,14 +785,14 @@ Si simulas con una normal multivariante:
 La t‑cópula corrige la parte conjunta (dependencia en cola), y la inversa empírica asegura que **cada activo** mantenga su forma (asimetría/colas) dentro de cada régimen.
 
 ### Inputs de Fase 4 (qué reutilizas de fases previas)
-Para cada estado $s\in\{\text{Normal},\text{Estrés}\}$ necesitas:
+Para cada estado $s\in\{\text{Normal},\text{Estres}\}$ necesitas:
 
 - Serie histórica de retornos por activo filtrada a ese estado: $\{r_{t,i}: S_t=s\}$.
 - Parámetros de t‑cópula del estado (Fase 3c):
   - matriz de correlación $\rho_s$ (en el espacio de la cópula),
   - grados de libertad $\nu_s$ (controla grosor de colas conjuntas).
 
-En el notebook, la Fase 4 (horizonte 1 día) genera dos “nubes” de escenarios: una para Normal y otra para Estrés.
+En el notebook, la Fase 4 (horizonte 1 día) genera dos “nubes” de escenarios: una para Normal y otra para Estres.
 
 ### Paso a paso (lo que hace el notebook, versión defendible)
 
@@ -836,7 +836,7 @@ Y con la muestra de escenarios (p.ej. 50.000), estimas:
 
 **Ejemplo de un escenario simulado (1 día):** La t-cópula genera 8 percentiles $U_i$; si son todos bajos (p. ej. 0.02, 0.03, 0.01, …) es un "día de pánico". La inversa empírica convierte cada $U_i$ en retorno del activo $i$ en ese régimen (AAPL → −3.1%, MSFT → −3.8%, IEF → +0.5%, …). Con pesos equiponderados, $r_p = (1/8)\sum_i r_i^{\text{sim}}$. Repitiendo 50.000 veces obtienes la distribución de $r_p$ y de ahí VaR/ES.
 
-En el notebook se reporta VaR/ES al 5% y 1% para Normal y Estrés, lo que permite contestar directamente: “¿cuánto empeora el riesgo de cartera cuando estás en crisis?”
+En el notebook se reporta VaR/ES al 5% y 1% para Normal y Estres, lo que permite contestar directamente: “¿cuánto empeora el riesgo de cartera cuando estás en crisis?”
 
 ### Cómo interpretar la validación (qué debe salir “bien”)
 La validación compara (por estado) **Histórico vs Simulado** en dos niveles:
@@ -848,11 +848,11 @@ Qué es aceptable:
 - pequeñas diferencias en correlación (Monte Carlo + tamaño muestral por estado),
 - pero no deberían aparecer “patrones nuevos” (p.ej. que bonos y equity pasen a correlación +0.8 si históricamente no es así).
 
-### “¿Por qué hay dos simulaciones (Normal y Estrés)?”
+### “¿Por qué hay dos simulaciones (Normal y Estres)?”
 Porque el objetivo del taller no es una simulación única “promedio”, sino un motor condicionado a régimen.
 
 - En **Normal** esperas colas más benignas y/o dependencia menos dañina.
-- En **Estrés** esperas colas peores y, sobre todo, más caídas conjuntas.
+- En **Estres** esperas colas peores y, sobre todo, más caídas conjuntas.
 
 De hecho, aunque $\rho$ cambie “poco” (Fase 3a), el riesgo de cartera puede cambiar “mucho” porque:
 - las colas marginales empeoran (Fase 2),
@@ -860,20 +860,20 @@ De hecho, aunque $\rho$ cambie “poco” (Fase 3a), el riesgo de cartera puede 
 
 ### Limitaciones (para decirlo con honestidad profesional)
 - **Inversa empírica**: no extrapola más allá de lo observado; para “peor que crisis” (Fase 5) tendrás que forzar colas más pesadas (p.ej. escalado de cuantiles, EVT, o marginal paramétrica) y/o empeorar dependencia.
-- **Muestra por estado**: si el estado Estrés tiene pocos días, algunos parámetros y cuantiles serán ruidosos; por eso es clave reportar y validar.
+- **Muestra por estado**: si el estado Estres tiene pocos días, algunos parámetros y cuantiles serán ruidosos; por eso es clave reportar y validar.
 - **Horizonte 1 día**: aquí no modelas path‑dependence ni acumulación multi‑día; eso se añade si simulas una secuencia de estados con la matriz de transición del HMM (extensión natural).
 
 Checklist fase 4 (lo mínimo que te puntúan):
 - [x] Simulación reproducible (seed) y $N$ escenarios suficiente (decenas de miles).
 - [x] Validación Hist vs Sim (marginal + correlación) por estado.
-- [x] Traducción a impacto en cartera: VaR/ES en Normal vs Estrés.
+- [x] Traducción a impacto en cartera: VaR/ES en Normal vs Estres.
 
 ---
 
 ## 6) Fase 5 — Stress testing “peor que crisis”
 
 ### Para qué sirve (mensaje Comité)
-Fase 4 te dice *“si mañana fuera un día típico de Normal o de Estrés, ¿qué pérdidas esperaría?”*. Eso es útil, pero tiene una limitación: **solo reproduce lo que has visto** (o algo muy parecido).
+Fase 4 te dice *“si mañana fuera un día típico de Normal o de Estres, ¿qué pérdidas esperaría?”*. Eso es útil, pero tiene una limitación: **solo reproduce lo que has visto** (o algo muy parecido).
 
 Fase 5 sirve para responder a la pregunta profesional clave:
 
@@ -924,7 +924,7 @@ Un stress “peor que crisis” suele tocar 1–3 palancas:
 Lo importante: que cada palanca tenga narrativa (mecanismo) y que cuantifiques el impacto en cartera.
 
 ### Profundizando: palancas, qué significan y cómo se aplican
-Para “pasar de concepto a implementación” es útil separar 4 palancas (las 3 anteriores + drift). En el notebook se aplican sobre el **modelo de Estrés** (Fase 4) para generar escenarios más severos.
+Para “pasar de concepto a implementación” es útil separar 4 palancas (las 3 anteriores + drift). En el notebook se aplican sobre el **modelo de Estres** (Fase 4) para generar escenarios más severos.
 
 #### Palanca 1 — Dependencia (quién cae con quién)
 Qué representa: *contagio* y *fallo de diversificación*. En el mundo real se manifiesta como:
@@ -933,14 +933,14 @@ Qué representa: *contagio* y *fallo de diversificación*. En el mundo real se m
 - bloques del universo moviéndose “en bloque”.
 
 Cómo se implementa (en este notebook):
-- Se modifica la matriz de correlación de la t‑cópula del estado Estrés ($C_t$) y luego se proyecta a una correlación válida (PSD).
+- Se modifica la matriz de correlación de la t‑cópula del estado Estres ($C_t$) y luego se proyecta a una correlación válida (PSD).
 - Dos patrones típicos:
   1) **Contagio sistémico**: empujar correlaciones entre activos de riesgo hacia un objetivo alto (p.ej. 0.85–0.95).
   2) **Bonos fallan**: empujar correlaciones equity–IEF / equity–SHY hacia 0 o positiva.
 
 Guía para defender parámetros:
 - El objetivo no es “acertar el número exacto”, sino que el shock sea coherente y deje un mensaje de riesgo.
-- Un rango defendible para un stress “serio” es aumentar correlaciones risky‑risky en +0.10 a +0.30 frente a Estrés baseline (dependiendo de cómo estés ya en crisis).
+- Un rango defendible para un stress “serio” es aumentar correlaciones risky‑risky en +0.10 a +0.30 frente a Estres baseline (dependiendo de cómo estés ya en crisis).
 
 Cómo leer el impacto:
 - Si al subir dependencia, $ES_{1\%}$ de cartera empeora mucho, tu cartera está expuesta a **caídas conjuntas** (diversificación frágil).
@@ -983,7 +983,7 @@ Cómo se implementa:
 - En el baseline del notebook se ha dejado en 0 para no mezclar mensajes, pero es una palanca muy defendible si el enunciado pide narrativa macro.
 
 ### Cómo se traduce esto a los 3 stresses implementados
-En el notebook se construyen 3 escenarios con narrativa y palancas explícitas (todos sobre el estado Estrés):
+En el notebook se construyen 3 escenarios con narrativa y palancas explícitas (todos sobre el estado Estres):
 
 1) **S1_contagio_sistemico**
   - Dependencia: risky‑risky empujado hacia correlaciones muy altas.
@@ -1005,7 +1005,7 @@ En el notebook se construyen 3 escenarios con narrativa y palancas explícitas (
 ### Buenas prácticas (para que no parezca ‘shock porque sí’)
 - Shockea pocas palancas por escenario (1–2 principales) para que el mensaje sea limpio.
 - Mantén coherencia: si dices “bonos fallan”, debe verse en correlaciones bonos/equity y en pérdida de cola de cartera.
-- Reporta siempre baseline de Estrés vs stress, y da una frase de implicación (límites/hedge/pesos).
+- Reporta siempre baseline de Estres vs stress, y da una frase de implicación (límites/hedge/pesos).
 
 ### Apoyo del material de clase (BME)
 En las diapositivas [tema 6 Gestion de riesgos/BME_Riesgo financieros(P).pdf](tema%206%20Gestion%20de%20riesgos/BME_Riesgo%20financieros(P).pdf) se remarca justo la motivación de esta fase:
@@ -1025,11 +1025,11 @@ Para cada escenario, produces:
   - media y volatilidad (secundario; en stress el foco son colas).
 
 Lectura típica:
-- Si un escenario empeora mucho $ES_{1\%}$ respecto al baseline de Estrés, estás expuesto a **eventos extremos conjuntos**.
+- Si un escenario empeora mucho $ES_{1\%}$ respecto al baseline de Estres, estás expuesto a **eventos extremos conjuntos**.
 - Si un escenario “bonos fallan” empeora mucho, tu diversificación depende demasiado de duración.
 
 ### Implementación en este notebook (baseline)
-En el notebook, Fase 5 parte del modelo de Estrés de Fase 4 y construye 3 escenarios defendibles (1 día, 50.000 simulaciones):
+En el notebook, Fase 5 parte del modelo de Estres de Fase 4 y construye 3 escenarios defendibles (1 día, 50.000 simulaciones):
 
 - **S1_contagio_sistemico**: risky‑risky más sincronizados + colas conjuntas más pesadas + vol↑.
 - **S2_inflacion_bonos_fallan**: bonos cubren menos (correlación bonos‑equity menos negativa) + vol↑.
@@ -1057,7 +1057,7 @@ Checklist fase 5:
 ### Idea
 En lugar de “qué pasa si…”, preguntas: “¿qué tiene que pasar para romperme?”.
 
-En nuestro notebook lo implementamos con una versión **práctica y defendible**: partimos del **baseline del régimen Estrés** (Fase 4/5) y aumentamos gradualmente la severidad de shocks tipo Fase 5 usando un parámetro de intensidad $\lambda\in[0,1]$.
+En nuestro notebook lo implementamos con una versión **práctica y defendible**: partimos del **baseline del régimen Estres** (Fase 4/5) y aumentamos gradualmente la severidad de shocks tipo Fase 5 usando un parámetro de intensidad $\lambda\in[0,1]$.
 
 ### Qué estás haciendo realmente (en una frase)
 Estás encontrando el **deterioro mínimo** (en colas/dependencia/volatilidad) que hace que una **métrica de pérdida de cartera** supere un umbral.
@@ -1069,7 +1069,7 @@ Esto es muy “de Comité” porque el output final no es “una simulación bon
 ### Versión sin tecnicismos (para entenderlo al 100%)
 
 1) Tú eliges una línea roja (umbral): *“si el ES(5%) diario es peor que −4%, ya no lo aceptamos”.*
-2) Diseñas una “rueda” de severidad: 0 = estrés histórico tal cual, 1 = el stress peor‑que‑crisis.
+2) Diseñas una “rueda” de severidad: 0 = estres histórico tal cual, 1 = el stress peor‑que‑crisis.
 3) Vas girando esa rueda (subes $\lambda$) y miras cuándo cruzas la línea roja.
 4) El **primer** punto donde cruzas es tu *reverse stress*: el mínimo shock que te rompe.
 
@@ -1082,7 +1082,7 @@ Dos formas típicas (ambas válidas):
 - **Umbral absoluto** (más claro para comité):
   - Ejemplo 1D: $ES_{5\%} \le -4\%$ o $VaR_{1\%}\le -6\%$.
 - **Umbral relativo al baseline** (útil cuando no quieres pelear el número exacto):
-  - Ejemplo: “inaceptable = 1.6× el ES(5%) del baseline de Estrés”.
+  - Ejemplo: “inaceptable = 1.6× el ES(5%) del baseline de Estres”.
 
 En el notebook usamos la versión relativa por defecto (se puede cambiar a absoluta).
 
@@ -1103,7 +1103,7 @@ Si quisieras afinar más, puedes:
 
 ### Qué significa $\lambda$ (y por qué es útil)
 
-- $\lambda=0$: **sin shock adicional** → cartera bajo el “modelo de Estrés” calibrado por histórico (t‑cópula + marginal empírica).
+- $\lambda=0$: **sin shock adicional** → cartera bajo el “modelo de Estres” calibrado por histórico (t‑cópula + marginal empírica).
 - $\lambda=1$: **stress completo** tipo Fase 5 (el escenario “peor que crisis” tal cual lo definimos).
 - Valores intermedios: mezcla lineal de palancas:
   - dependencia: $C(\lambda)=(1-\lambda)C_{base}+\lambda C_{stress}$ (y luego se fuerza PSD),
@@ -1133,14 +1133,14 @@ En el main, la Fase 6 usa un número de escenarios distinto al de Fase 4/5 (p. e
 
 ### Cómo leer el resultado (ejemplo de la ejecución actual)
 
-En la ejecución del notebook (1 día, métrica objetivo **ES(5%)**, umbral = **1.6×** el ES(5%) base en Estrés):
+En la ejecución del notebook (1 día, métrica objetivo **ES(5%)**, umbral = **1.6×** el ES(5%) base en Estres):
 
 - Baseline ES5 (Estr?s) ? **?1.80%**
 - Umbral objetivo ES5 ? **?2.89%**
 - El shock m?nimo para cruzar el umbral fue **S1_contagio_sistemico** con $\lambda\approx 0.80$.
 
 **Ejemplo de cómo se ve la curva ES(5%) vs $\lambda$ (cualitativo):**
-- $\lambda=0$: ES5 ≈ −2.48% (baseline Estrés).
+- $\lambda=0$: ES5 ≈ −2.48% (baseline Estres).
 - $\lambda=0.3$: ES5 ? ?2.16%; $\lambda=0.5$: ES5 ? ?2.47%; $\lambda=0.8$: ES5 ? ?2.90% (cruza la l?nea ?2.89%).
 - Para S2 (bonos fallan) la curva puede cruzar más tarde (p. ej. $\lambda=1.0$); para S3 (crédito) puede no cruzar en [0,1] → "con esta cartera el driver del punto de rotura es el contagio, no el crédito aislado."
 
