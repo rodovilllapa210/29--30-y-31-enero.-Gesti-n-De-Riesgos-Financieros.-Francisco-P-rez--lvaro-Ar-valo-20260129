@@ -1,7 +1,7 @@
 # Informe Ejecutivo de Riesgos - Cartera Multi-Activo
 
 **Fecha:** 2026-02-15  
-**Periodo analizado (panel CORE):** 2007-04-11 a 2026-02-13  
+**Periodo analizado (panel CORE):** precios 2007-04-11 a 2026-02-13; retornos 2007-04-12 a 2026-02-13  
 **Marco metodologico:** HMM 2 estados + copulas por estado + simulacion Monte Carlo (10.000 trayectorias, 6 meses)
 
 ## 1) Decision ejecutiva
@@ -46,7 +46,7 @@ La cartera puede operar en regimen base, pero su riesgo de cola se deteriora de 
 | Escenario | VaR99 6m | ES99 6m | Delta ES99 6m vs Base | Corr media estres |
 |---|---:|---:|---:|---:|
 | S2 Crisis Credito 2008 | -41.10% | -48.14% | -22.80% | 0.522 |
-| S3 Liquidez Global | -36.08% | -44.63% | -19.29% | 0.449 |
+| S3 Liquidez Global | -36.07% | -44.63% | -19.29% | 0.449 |
 | S1 Estanflacion 2022 | -28.65% | -35.98% | -10.64% | 0.430 |
 | Base | -21.42% | -25.35% | +0.00% | 0.307 |
 
